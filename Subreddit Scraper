@@ -1,0 +1,37 @@
+import praw
+import pandas as pd
+
+# First, we'll need to create a Reddit instance using praw
+reddit = praw.Reddit(client_id='YOUR_CLIENT_ID',
+                     client_secret='YOUR_CLIENT_SECRET',
+                     user_agent='YOUR_USER_AGENT')
+
+# Next, let's define a function that takes a subreddit name as input, and returns a pandas DataFrame containing the top 100 posts from the past month
+def get_top_posts(subreddit):
+  # We'll use the `subreddit` object's `hot` method to get the top 100 posts from the past month
+  top_posts = subreddit.hot(limit=100)
+  
+  # Now, let's create an empty list that we'll use to store the post metadata
+  posts = []
+  
+  # We'll iterate through the top posts, and append a dictionary containing the post metadata to the `posts` list for each post
+  for post in top_posts:
+    posts.append({
+        'title': post.title,
+        'score': post.score,
+        'author': post.author.name,
+        'created_utc': post.created_utc,
+        'subreddit': post.subreddit.display_name,
+        'permalink': post.permalink,
+        'num_comments': post.num_comments
+    })
+  
+  # Finally, we'll return the `posts` list as a pandas DataFrame
+  return pd.DataFrame(posts)
+
+# Now, we can use the `get_top_posts` function to get the top 100 posts from a subreddit of our choice
+subreddit = reddit.subreddit('SUBREDDIT_NAME')
+df = get_top_posts(subreddit)
+
+# If we want to save the post metadata to a csv file, we can use the pandas `to_csv` method
+df.to_csv('posts.csv', index=False)
